@@ -1,0 +1,16 @@
+﻿docker-compose.override.yml
+*.log
+*.env
+*.bak
+*.tmp
+__pycache__/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+.vscode/
+.idea/

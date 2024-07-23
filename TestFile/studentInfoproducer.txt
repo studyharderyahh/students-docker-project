@@ -1,0 +1,6 @@
+1234,Garry Singh,Applied Data Structures
+1212,Ewan Tempero,Cloud Computing
+3452,Reza Shahmiri,UX/UI
+5895,Sayan Ray,Computer Networking
+8956,Joseph Zia,Full Stack
+4475,Zia Bashir,Mathematics

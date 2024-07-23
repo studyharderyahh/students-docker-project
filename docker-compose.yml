@@ -1,0 +1,129 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13
+    ports:
+      - "15672:15672" # Expose RabbitMQ Management UI port
+      - "5672:5672" # Expose AMQP port
+    restart: always
+    networks:
+      - goooooo
+
+  postgressql:
+    build: ./postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - goooooo
+
+  file_reader_to_db:
+    image: "golang:1.22.5"
+    volumes:
+      - ./:/app
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        cd /app
+        go run . reader
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      DATABASE_HOST: postgressql
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_DBNAME: postgres
+    networks:
+      - goooooo
+    depends_on:
+      - postgressql
+      - rabbitmq
+
+  file_writer_from_db:
+    image: "golang:1.22.5"
+    volumes:
+      - ./:/app
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      DATABASE_HOST: postgressql
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_DBNAME: postgres
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        cd /app
+        go run . writer
+    networks:
+      - goooooo
+    depends_on:
+      - file_reader_to_db
+
+  students_api:
+    image: "golang:1.22.5"
+    volumes:
+      - ./:/app
+    environment:
+      DATABASE_HOST: postgressql
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_DBNAME: postgres
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        cd /app
+        go run . students
+    networks:
+      - goooooo
+    depends_on:
+      - postgressql
+    ports:
+      - 8080:8080
+    
+  analyser_to_file:
+    image: "golang:1.22.5"
+    volumes:
+      - ./:/app
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        cd /app
+        go run . analyser
+    environment:
+      API_HOST: students_api
+      API_PORT: 8080
+      API_ENDPOINT: students
+      FILE_PATH: /tmp/Destination.txt
+    networks:
+      - goooooo
+    depends_on:
+      - students_api
+    ports:
+      - 8000:8000
+
+networks:
+  goooooo:
+
+
+volumes:
+  db:
