@@ -10,7 +10,7 @@ The architecture consists of several Dockerized services:
 - **PostgreSQL**: Stores students data.
 - **Reader**: Reads data from a text file and publish to RabbitMQ.
 - **Writer**: Consumes data from RabbitMQ and writes it to the PostgreSQL database.
-- **Location Analyser**: Retrieves and processes students data from PostgreSQL into another file.
+- **Analyser**: Retrieves and processes students data from PostgreSQL into another file.
 
 ## Prerequisites
 
